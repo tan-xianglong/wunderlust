@@ -1,11 +1,13 @@
 // Foursquare API Info
 const foursquareKey = "fsq3t3ufg5DODQ1/lso0Rnfbq6mnB2mEeBiudLGyTnuDKmA=";
 const url = "https://api.foursquare.com/v3/places/search";
-let near = "?near=";
+const near = "?near=";
+const limit ="&limit="
+const numResult = 10;
 
 // OpenWeather Info
 const openWeatherKey = "11e0d28d0b40853fe914d1f6bc584830";
-const weatherUrl = "";
+const weatherUrl = "https://api.openweathermap.org/data/2.5/weather";
 
 // Page Elements
 const $input = $("#city");
@@ -28,11 +30,25 @@ const options = {
   method: "GET",
   headers: {
     Accept: "application/json",
+    Authorization: foursquareKey
   },
 };
 
 // Add AJAX functions here:
-const getPlaces = () => {};
+const getPlaces = async () => {
+  const city = $input.val();
+  const urlToFetch = `${url}${near}${city}${limit}${numResult}`;
+  try {
+    const response = await fetch(urlToFetch, options);
+    if(response.ok){
+      const jsonResponse = await response.json();
+      const places = jsonResponse.results;
+      return places;
+    } throw new Error('Request failed!')
+  } catch (error) {
+    console.log(error);
+  }
+};
 
 const getForecast = () => {};
 
