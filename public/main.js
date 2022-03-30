@@ -50,6 +50,25 @@ const getPlaces = async () => {
   }
 };
 
+const getPhoto = async (place) => {
+  const fsqId = place.fsq_id;
+  const urlToFetch = `https://api.foursquare.com/v3/places/${fsqId}/photos?limit=1`;
+
+  try{
+    const response = await fetch(urlToFetch, options);
+    if(response.ok){
+      const jsonResponse = await response.json();
+      const urlSuffix = jsonResponse[0].suffix;
+      const urlPrefix = jsonResponse[0].prefix;
+      const size = '250x187'
+      const photoURL = `${urlPrefix}${size}${urlSuffix}`;
+      return photoURL
+    } throw new Error('Request failed!')
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 const getForecast = async () => {
   const urlToFetch = `${weatherUrl}?q=${$input.val()}&APPID=${openWeatherKey}`;
   try{
@@ -57,28 +76,46 @@ const getForecast = async () => {
     if(response.ok){
       const jsonResponse = await response.json();
       console.log(jsonResponse);
+      return jsonResponse;
     }
-    return jsonResponse;
   } catch (error) {
     console.log(error);
   }
 };
 
 // Render functions
-const renderPlaces = (places) => {
-  $placeDivs.forEach(($place, index) => {
-    // Add your code here:
+const renderPlaces = async (places) => {
+  let index = 0;
+  for (const $place of $placeDivs) {
     const place = places[index];
-    const placeIcon = place.categories[0].icon;
-    const placeImgSrc = `${placeIcon.prefix}bg_64${placeIcon.suffix}`
-    const placeContent = createPlaceHTML(place.name, place.location, placeImgSrc);
+    console.log(place);
+    const placeImgSrc = await getPhoto(place);
+    const placeContent = createPlaceHTML(
+      place.name,
+      place.location,
+      placeImgSrc
+    );
     $place.append(placeContent);
-  });
+    index++;
+  }
+  // $placeDivs.forEach(($place, index) => {
+  //   // Add your code here:
+  //   const place = places[index];
+  //   console.log(place);
+  //   const placeIcon = place.categories[0].icon;
+  //   const placeImgSrc = `${placeIcon.prefix}bg_64${placeIcon.suffix}`;
+  //   const placeContent = createPlaceHTML(
+  //     place.name,
+  //     place.location,
+  //     placeImgSrc
+  //   );
+  //   $place.append(placeContent);
+  // });
   $destination.append(`<h2>${places[0].location.locality}</h2>`);
 };
 
 const renderForecast = (forecast) => {
-  const weatherContent = "";
+  const weatherContent = createWeatherHTML(forecast);
   $weatherDiv.append(weatherContent);
 };
 
@@ -87,8 +124,8 @@ const executeSearch = () => {
   $weatherDiv.empty();
   $destination.empty();
   $container.css("visibility", "visible");
-  getPlaces().then(places =>{renderPlaces(places)});
-  getForecast();
+  getPlaces().then(places =>{renderPlaces(places);});
+  getForecast().then(forecast => {renderForecast(forecast);});
   return false;
 };
 
