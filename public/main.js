@@ -68,8 +68,10 @@ const getForecast = async () => {
 const renderPlaces = (places) => {
   $placeDivs.forEach(($place, index) => {
     // Add your code here:
-
-    const placeContent = "";
+    const place = places[index];
+    const placeIcon = place.categories[0].icon;
+    const placeImgSrc = `${placeIcon.prefix}bg_64${placeIcon.suffix}`
+    const placeContent = createPlaceHTML(place.name, place.location, placeImgSrc);
     $place.append(placeContent);
   });
   $destination.append(`<h2>${places[0].location.locality}</h2>`);
@@ -85,7 +87,7 @@ const executeSearch = () => {
   $weatherDiv.empty();
   $destination.empty();
   $container.css("visibility", "visible");
-  getPlaces();
+  getPlaces().then(places =>{renderPlaces(places)});
   getForecast();
   return false;
 };
